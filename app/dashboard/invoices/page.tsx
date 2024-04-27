@@ -3,7 +3,7 @@ import Search from '@/app/ui/search';
 import Table from '@/app/ui/invoices/table';
 import { CreateInvoice } from '@/app/ui/invoices/buttons';
 import { lusitana } from '@/app/ui/fonts';
-import { Suspense } from 'react';
+import { Suspense } from 'react'; // độ trễ hiển thị trang
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { fetchInvoicesPages } from '@/app/lib/data';
 import { Metadata } from 'next';
@@ -12,10 +12,7 @@ export const metadata: Metadata = {
   title: 'Invoices',
 };
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: {
+export default async function Page({searchParams,}: {searchParams?: {
     query?: string;
     page?: string;
   };
@@ -40,7 +37,8 @@ export default async function Page({
         <Table query={query} currentPage={currentPage} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
-        <Pagination totalPages={totalPages} />
+        {/* phân trang  Pagination */}
+        <Pagination totalPages={totalPages} /> 
       </div>
     </div>
   );
