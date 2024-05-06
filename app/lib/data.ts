@@ -1,31 +1,35 @@
-import { unstable_noStore as noStore } from 'next/cache';
 import { sql } from '@vercel/postgres';
 import {
   CustomerField,
-  CustomersTableType,
+  // Customers,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
   User,
   Revenue,
+  CustomerForm,
+  CustomersTableType,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { unstable_noStore as noStore } from 'next/cache';
+const ITEMS_PER_PAGE = 6;
+
 
 export async function fetchRevenue() {
-    // Add noStore() here to prevent the response from being cached.
+  // Add noStore() here prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
   noStore();
   try {
-    // We artificially delay a response for demo purposes.
-    // Don't do this in production :)
+    // Artificially delay a reponse for demo purposes.
+    // Don't do this in real life :)
 
-    console.log('Fetching revenue data...');
+    // console.log('Fetching revenue data...');
     await new Promise((resolve) => setTimeout(resolve, 3000));
- 
+
     const data = await sql<Revenue>`SELECT * FROM revenue`;
- 
-    console.log('Data fetch completed after 3 seconds.');
- 
+
+    // console.log('Data fetch complete after 3 seconds.');
+
     return data.rows;
   } catch (error) {
     console.error('Database Error:', error);
@@ -86,15 +90,12 @@ export async function fetchCardData() {
     };
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch card data.');
+    throw new Error('Failed to card data.');
   }
 }
 
-const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-) {
+// const ITEMS_PER_PAGE = 6;
+export async function fetchFilteredInvoices( query: string, currentPage: number,) {
   noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
@@ -167,15 +168,15 @@ export async function fetchInvoiceById(id: string) {
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
-    console.log(invoice); // Invoice is an empty array []
+
     return invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoice.');
   }
 }
 
 export async function fetchCustomers() {
+  noStore();
   try {
     const data = await sql<CustomerField>`
       SELECT
@@ -193,26 +194,80 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+
+
+export async function getUser(email: string) {
   noStore();
   try {
+    const user = await sql`SELECT * from USERS where email=${email}`;
+    return user.rows[0] as User;
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+}
+
+// add customer
+// export async function fetchFilteredCustomers(query: string, currentPage: number) {
+//   noStore();
+
+//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  
+//   try {
+//     const data = await sql<CustomersTableType>`
+// 		SELECT
+// 		  customers.id,
+// 		  customers.name,
+// 		  customers.email,
+// 		  COUNT(invoices.id) AS total_invoices,
+// 		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
+// 		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
+// 		FROM customers
+// 		LEFT JOIN invoices ON customers.id = invoices.customer_id
+// 		WHERE
+// 		  (customers.name ILIKE ${`%${query}%`} OR
+//       customers.email ILIKE ${`%${query}%`})
+// 		GROUP BY customers.id, customers.name, customers.email, customers
+// 		ORDER BY customers.name ASC
+//     LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+// 	  `;
+
+//     const customers = data.rows.map((customer) => ({
+//       ...customer,
+//       total_pending: formatCurrency(customer.total_pending),
+//       total_paid: formatCurrency(customer.total_paid),
+//     }));
+//     console.log(customers)
+//     return customers;
+//   } catch (err) {
+//     console.error('Database Error:', err);
+//     throw new Error('Failed to fetch customer table.');
+//   }
+// }
+export async function fetchFilteredCustomers(query: string, currentPage: number) {
+  noStore();
+
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
     const data = await sql<CustomersTableType>`
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`}
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `;
+      SELECT
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.image_url,
+        COUNT(invoices.id) AS total_invoices,
+        SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
+        SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
+      FROM customers
+      LEFT JOIN invoices ON customers.id = invoices.customer_id
+      WHERE
+        (customers.name ILIKE ${`%${query}%`} OR
+        customers.email ILIKE ${`%${query}%`})
+      GROUP BY customers.id, customers.name, customers.email, customers.image_url
+      ORDER BY customers.name ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
 
     const customers = data.rows.map((customer) => ({
       ...customer,
@@ -227,13 +282,49 @@ export async function fetchFilteredCustomers(query: string) {
   }
 }
 
-export async function getUser(email: string) {
+export async function fetchCustomersPages(query: string) {
+// export async function fetchCustomersPages(query: string, userEmail: string) {
+  noStore();
+
   try {
-    const user = await sql`SELECT * FROM users WHERE email=${email}`;
-    return user.rows[0] as User;
+    const count = await sql<{ count: number }>`
+      SELECT COUNT(*)
+      FROM customers
+      WHERE
+        (customers.name ILIKE ${`%${query}%`} OR
+        customers.email ILIKE ${`%${query}%`})
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of customers.');
   }
 }
 
+
+
+export async function fetchCustomerById(id: string) {
+// export async function fetchCustomerById(id: string, userEmail: string) {
+  noStore();
+  
+  try {
+    const customer = await sql<CustomerForm>`
+      SELECT
+        id, name, email
+      FROM customers
+      WHERE
+        id = ${id};
+    `;
+
+    return customer.rows[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    // throw new Error('Failed to fetch customer.');
+
+    return false // we can't return an error, because it can break the not-found functionality at app\dashboard\invoices\[id]\edit\not-found.tsx
+  }
+}
+
+//

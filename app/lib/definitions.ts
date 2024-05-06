@@ -1,3 +1,38 @@
+// add customer
+// export type CustomerForm = {
+//   id: string;
+//   name: string;
+//   email: string;
+// };
+
+// export type CustomersTableType = {
+//   id: string;
+//   name: string;
+//   email: string;
+//   total_invoices: number;
+//   total_pending: number;
+//   total_paid: number;
+// };
+export type CustomerForm = {
+  id: string;
+  name: string;
+  email: string;
+  image_url: string;
+};
+
+export type CustomersTableType = {
+  id: string;
+  name: string;
+  email: string;
+  image_url: string;
+  total_invoices: number;
+  total_pending: number;
+  total_paid: number;
+};
+
+
+//
+
 // This file contains type definitions for your data.
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
@@ -53,16 +88,6 @@ export type InvoicesTable = {
   date: string;
   amount: number;
   status: 'pending' | 'paid';
-};
-
-export type CustomersTableType = {
-  id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  total_invoices: number;
-  total_pending: number;
-  total_paid: number;
 };
 
 export type FormattedCustomersTable = {
