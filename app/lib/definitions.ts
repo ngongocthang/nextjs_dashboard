@@ -1,18 +1,4 @@
 // add customer
-// export type CustomerForm = {
-//   id: string;
-//   name: string;
-//   email: string;
-// };
-
-// export type CustomersTableType = {
-//   id: string;
-//   name: string;
-//   email: string;
-//   total_invoices: number;
-//   total_pending: number;
-//   total_paid: number;
-// };
 export type CustomerForm = {
   id: string;
   name: string;
@@ -29,8 +15,6 @@ export type CustomersTableType = {
   total_pending: number;
   total_paid: number;
 };
-
-
 //
 
 // This file contains type definitions for your data.

@@ -1,7 +1,6 @@
 import { sql } from '@vercel/postgres';
 import {
   CustomerField,
-  // Customers,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
@@ -208,42 +207,6 @@ export async function getUser(email: string) {
 }
 
 // add customer
-// export async function fetchFilteredCustomers(query: string, currentPage: number) {
-//   noStore();
-
-//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-  
-//   try {
-//     const data = await sql<CustomersTableType>`
-// 		SELECT
-// 		  customers.id,
-// 		  customers.name,
-// 		  customers.email,
-// 		  COUNT(invoices.id) AS total_invoices,
-// 		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-// 		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-// 		FROM customers
-// 		LEFT JOIN invoices ON customers.id = invoices.customer_id
-// 		WHERE
-// 		  (customers.name ILIKE ${`%${query}%`} OR
-//       customers.email ILIKE ${`%${query}%`})
-// 		GROUP BY customers.id, customers.name, customers.email, customers
-// 		ORDER BY customers.name ASC
-//     LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-// 	  `;
-
-//     const customers = data.rows.map((customer) => ({
-//       ...customer,
-//       total_pending: formatCurrency(customer.total_pending),
-//       total_paid: formatCurrency(customer.total_paid),
-//     }));
-//     console.log(customers)
-//     return customers;
-//   } catch (err) {
-//     console.error('Database Error:', err);
-//     throw new Error('Failed to fetch customer table.');
-//   }
-// }
 export async function fetchFilteredCustomers(query: string, currentPage: number) {
   noStore();
 
@@ -283,7 +246,6 @@ export async function fetchFilteredCustomers(query: string, currentPage: number)
 }
 
 export async function fetchCustomersPages(query: string) {
-// export async function fetchCustomersPages(query: string, userEmail: string) {
   noStore();
 
   try {
@@ -306,7 +268,6 @@ export async function fetchCustomersPages(query: string) {
 
 
 export async function fetchCustomerById(id: string) {
-// export async function fetchCustomerById(id: string, userEmail: string) {
   noStore();
   
   try {
@@ -321,7 +282,6 @@ export async function fetchCustomerById(id: string) {
     return customer.rows[0];
   } catch (error) {
     console.error('Database Error:', error);
-    // throw new Error('Failed to fetch customer.');
 
     return false // we can't return an error, because it can break the not-found functionality at app\dashboard\invoices\[id]\edit\not-found.tsx
   }
